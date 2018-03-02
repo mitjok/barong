@@ -1,5 +1,8 @@
 defaults: &defaults
   app_name: 'Barong'
+  devise:
+    sender_name: 'Barong'
+    sender_email: 'noreply@barong.io'
 
 
 development:
