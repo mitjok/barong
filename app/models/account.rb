@@ -36,7 +36,11 @@ class Account < ApplicationRecord
   end
 
   def after_confirmation
-    add_level_label(:email)
+    if ENV['PROMOTION_LEVEL'].present?
+      assign_level(ENV['PROMOTION_LEVEL'])
+    else
+      add_level_label(:email)
+    end
     self.state = 'active'
     save
   end
@@ -91,6 +95,18 @@ class Account < ApplicationRecord
       created_at: format_iso8601_time(created_at),
       updated_at: format_iso8601_time(updated_at)
     }
+  end
+
+  def assign_level(level)
+    unless (1..Level.last.id).cover?(level.to_i)
+      Rails.logger.error 'Invalid level value' && return
+    end
+
+    Level.where(id: 1..level.to_i).each do |l|
+      Label.find_or_create_by!(
+        account: self, key: l.key, value: l.value, scope: 'private'
+      )
+    end
   end
 end
 
